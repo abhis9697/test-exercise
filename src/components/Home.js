@@ -5,18 +5,41 @@ import Collapsible from 'react-collapsible';
 import {Link} from 'react-router-dom';
 import WOW from "wowjs";
 import GoogleMapComponentWithMarker from "./GoogleMapComponentWithMarker";
+import { connect } from 'react-redux';
+import { requests } from 'http';
 
-const styles1 = {
+const styles = {
   width: '100%',
   height: '536px'
 }
 
+const mapStateToProps = state => ({ ...state.auth });
+
+const mapDispatchToProps = dispatch => ({
+  onChangeEmail: value =>
+    dispatch({ type: 'UPDATE_FIELD_AUTH', key: 'email', value }),
+  onChangePassword: value =>
+    dispatch({ type: 'UPDATE_FIELD_AUTH', key: 'password', value }),
+  onChangeUsername: value =>
+    dispatch({ type: 'UPDATE_FIELD_AUTH', key: 'username', value }),
+  onSubmit: (username, email, password) => {
+    requests.post('/APIURL', { user: { username, email, password } })
+    dispatch({ type: 'REGISTER'})
+  }
+});
+
 
 
 class Home extends Component {
-  constructor(props) {
-    super(props);
- 
+  constructor() {
+    super();
+    this.changeEmail = event => this.props.onChangeEmail(event.target.value);
+    this.changePassword = event => this.props.onChangePassword(event.target.value);
+    this.changeUsername = event => this.props.onChangeUsername(event.target.value);
+    this.submitForm = (username, email, password) => event => {
+      event.preventDefault();
+      this.props.onSubmit(username, email, password);
+    }
     
   }
   componentDidMount(){
@@ -31,7 +54,7 @@ class Home extends Component {
  
   
    render() {
-    
+    const { email, username, password } = this.props;
     return (
      <div>
        
@@ -158,7 +181,7 @@ class Home extends Component {
 
                       <div className="row clearfix">
            
-                      <div style={styles1}>
+                      <div style={styles}>
         <GoogleMapComponentWithMarker
           googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,places&key="
           loadingElement={<div style={{ height: `100%` }} />}
@@ -288,33 +311,47 @@ class Home extends Component {
                                 
 
                                   <h2>Send a Message</h2>
-                                  <Form>
-                                  <Form.Group as={Row}>
-                                    <Col sm="6">                                   
-                                      <Form.Label>Your Name*</Form.Label>
-                                      <Form.Control type="text" />
-                                    </Col>
-                                    <Col sm="6">                                   
-                                      <Form.Label>Your Email*</Form.Label>
-                                      <Form.Control type="text" />
-                                    </Col>
-                                   </Form.Group>
-                                   <Form.Group as={Row}>
-                                    <Col sm="12">                                   
-                                      <Form.Label>Your Subject*</Form.Label>
-                                      <Form.Control type="text" />
-                                    </Col>
-                                    </Form.Group>
-                                    <Form.Group as={Row}>
-                                    <Col sm="12">                                   
-                                      <Form.Label>Your Message*</Form.Label>
-                                      <Form.Control as="textarea" rows="5" />
-                                    </Col>
-                                   </Form.Group>
-                                <Button variant="primary" className="btn btn-default" type="submit">
-                                  Submit
-                                </Button>
-                            </Form>
+                                  
+
+<form onSubmit={this.submitForm(username, email, password)}>
+  <fieldset>
+
+    <fieldset className="form-group">
+      <input
+        className="form-control form-control-lg"
+        type="text"
+        placeholder="Username"
+        value={this.props.username}
+        onChange={this.changeUsername} />
+    </fieldset>
+
+    <fieldset className="form-group">
+      <input
+        className="form-control form-control-lg"
+        type="email"
+        placeholder="Email"
+        value={this.props.email}
+        onChange={this.changeEmail} />
+    </fieldset>
+
+    <fieldset className="form-group">
+      <input
+        className="form-control form-control-lg"
+        type="password"
+        placeholder="Password"
+        value={this.props.password}
+        onChange={this.changePassword} />
+    </fieldset>
+
+    <button
+      className="btn btn-lg btn-primary pull-xs-right"
+      type="submit"
+      disabled={this.props.inProgress}>
+      Sign in
+    </button>
+
+  </fieldset>
+</form>
 
                                    
                                 </div>
@@ -337,4 +374,4 @@ class Home extends Component {
     );
   }
 }
-export default Home;
+export default connect(mapStateToProps, mapDispatchToProps)(Home);;
