@@ -374,4 +374,10 @@ class Home extends Component {
     );
   }
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Home);;
+
+const FilterLink = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)
+
+export default Home;
